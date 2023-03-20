@@ -1,6 +1,7 @@
 # Effective-TypeScript
 
-## 스타드 2023.03.20(월)
+## 스타드 
+2023.03.20(월)
 
 ## 교재
 [이펙티브 타입스크립트](http://www.yes24.com/Product/Goods/102124327)
