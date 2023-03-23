@@ -50,8 +50,7 @@ function asNumber(val) {
 이렇게 변해버림  
 
 as 는 타입 연산이므로 런타임과정에서 아무런 영항을 주지 못하게 됨  
-이는 자바스크립트의 연산을 통해 변환을 수행해야 한다  
-==> 그럼 왜 as라는걸 만든거임?
+이는 자바스크립트의 연산을 통해 변환을 수행해야 한다.  
 
  - 런타임 타입은 선언된 타입과 다를 수 있음  
 ```ts
@@ -100,7 +99,76 @@ a의 값은 숫자 타입이라 setLightSwitch의 인자로 사용시 에러가 
 실제로는 a의 값인 숫자에 주목하는게 아닌 부여받은 타입인 any에 관심이 치중되어 있어  
 any > boolean의 개념이 적용된 듯  
 
+### 04 구조적 타이핑에 익숙해지기  
 
+아래 코드에서 calculateLength() 를 호출할때  
+Vector2D 타입이아닌 NamedVector 타입의 변수로 호출하였지만 동작이 잘 됨  
+이는 Vector2D가 NamedVector의 하위집합이므로 가능  
+```ts
+interface Vector2D {
+    x: number,
+    y: number,
+}
 
+function calculateLength(v: Vector2D) {
+    return Math.sqrt(v.x * v.x + v.y * v.y);
+}
 
+interface NamedVector {
+    name: string;
+    x:number;
+    y:number;
+}
 
+const v:NamedVector = {x:3, y:4, name: 'Zee'};
+calculateLength(v);
+```
+이처럼 어떠한 (A)타입을 사용하도록 설계된 함수지만  
+상위집합인 다른 (B)타입을 사용가능한 이유는
+타입스크립트에서는 타입의 이름까지 체크하는 것이 아닌, 타입만을 체크하며
+집합관계를 허용하는 구조적 타이핑을 사용하기 때문
+
+명목적 타이핑에서는 타입들의 구조가 같더라도 사용하기로한 타입만을 사용해야 되는것으로 알고 있음
+
+다만 이 때문에 문제가 발생할 때도 있음
+```ts
+interface Vector3D {
+    x: number;
+    y: number;
+    z: number;
+}
+
+function normalize(v: Vector3D) {
+    const length = calculateLength(v);
+    return {
+        x: v.x / length,
+        y: v.y / length,
+        z: v.z / length,
+    }
+}
+
+console.log(normalize({x:3,y:4,z:5})) // 0.6, 0.8, 1.0
+```
+사실 이 부분은 뭐가 문젠지 모르겠음  
+벡터를 몰라서 책의 내용이 이해가 안감   
+0.6 0.8 1.0이 나오는게 정상처럼 보임  
+그냥 다음으로 패스  
+
+결론은 상위집합에 속하는 에러를 범할 수 있으니 주의하자 인 듯  
+
+다음예제에서도 이와 같은 에러 예시를 보여줌  
+```ts
+function calculateLengthL1(v: Vector3D) {
+    for (const axis of Object.keys(v)) {
+        const coord = v[axis];
+        length += Math.abs(coord);
+    }
+    return length;
+}
+calculateLengthL1({x:3,y:4,z:5})
+```
+이라고 했으나 컴파일이 잘됨  
+내가 멍청한건지 타입스크립트가 패치된건지 도저히 모르겠음  
+책에서 말해주는 에러 이유로는 calculateLengthL1의 인자로 Vector3D타입의 상위타입이 주어질 시,  
+프로퍼티의 값이 숫자가 아닌 any값이 된다하여 에러를 뿜는다 함  
+책만봤을땐 이해가 갔는데 아무튼 에러는 안났음  
