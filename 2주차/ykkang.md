@@ -90,6 +90,18 @@
      interface Vector2D {x: number, y: number};
      interface Vector3D {x: number, y: number, z: number};
      ```
+7. extends 키워드
+   - 제네릭 타입의 한정자로도 사용되는대
+     ```ts
+     function getKey<K extends string>(val: any, key: K);
+     ```
+     위 코드에서 extends를 집합의 관점에서 해석하면 string의 부분 집합 범위를 가지는 어떠한 타입이 된다. 그러므로 string 리터럴 타입, string 리터럴 타입의 유니온, string 자기 자신 모두 포함된다. 그래서 아래 코드중 마지막 12 를 제외한 모든 코드가 정상동작 하게 된다.
+     ```ts
+     getKey({}, "x");
+     getKey({}, Math.random() < 0.5 ? "a" : "b");
+     getKey({}, document.Title);
+     getKey({}, 12);
+     ```
 
 ## item8 : 타입 공간과 값 공간의 심벌 구분하기
 
