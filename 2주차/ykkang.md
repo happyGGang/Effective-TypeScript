@@ -95,7 +95,7 @@
      ```ts
      function getKey<K extends string>(val: any, key: K);
      ```
-     위 코드에서 extends를 집합의 관점에서 해석하면 string의 부분 집합 범위를 가지는 어떠한 타입이 된다. 그러므로 string 리터럴 타입, string 리터럴 타입의 유니온, string 자기 자신 모두 포함된다. 그래서 아래 코드중 마지막 12 를 제외한 모든 코드가 정상동작 하게 된다.
+     위 코드에서 extends를 집합의 관점에서 해석하면 string의 부분 집합 범위를 가지는 어떠한 타입이 된다. 그러므로 string 리터럴 타입, string 리터럴 타입의 유니온, string 자기 자신 모두 포함된다. 그래서 아래 코드중 마지막 12를 제외한 모든 코드가 정상동작 하게 된다.
      ```ts
      getKey({}, "x");
      getKey({}, Math.random() < 0.5 ? "a" : "b");
@@ -105,8 +105,119 @@
 
 ## item8 : 타입 공간과 값 공간의 심벌 구분하기
 
+1. 타입스크립트 심벌은 타입 공간이나 값 공간 중 한곳에 존재
+
+   - 심벌은 이름이 같더라도 속하는 공간에 따라 다른 것을 나타냄.
+
+     ```ts
+     interface Cylinder {
+       // 타입으로 쓰임
+       radius: number;
+       height: number;
+     }
+
+     const Cylinder = (radius: number, height: number) => ({ radius, height }); // 값으로 쓰임
+     ```
+
+     대신 `interface Cylinder`와 `Cylinder`는 서로 아무 관련도 없지만 이름이 같아서 가끔 오류가 발생함
+
+     ```ts
+     function calculateVolume(shape: unKnown) {
+       if (shape instanceof Cylinder) {
+         shape.radius;
+       }
+     }
+     ```
+
+     위 코드에서 instanceof를 이용해서 shape가 Cylinder 타입인지 확인하려고 했지만 런타임때는 인터페이스는 사라지기때문에 interface Cylinder가 아닌 calculateVolume함수를 참조하게 되어 오류가 발생함
+
+2. 타입인지 값인지는 문맥을 통해 알아내야함
+   - 아래 코드처럼 type이나 interface 뒤에 오는 심벌은 타입으로, const나 let 뒤에 오는 심벌은 값으로 사용되는것이 명확하다. 또는 : 뒤에는 타입이, = 뒤에는 값이 오는 것도 명확하다,
+     ```ts
+     type T1 = "string literal";
+     const v1 = "string literal";
+     ```
+     그러나 class나 enum은 타입도 값도 모두 가능한 예약어라 문맥을 통해 값인지 타입인지 파악해야한다.
+3. 값과 타입에서 각각 다르게 동작하는 typeof 연산자
+   - 타입으로 사용될때는 값을 읽고 타입을 리턴, 타입 공간에서는 보다 큰 타입의 일부분으로 사용, type 구문으로 이름을 붙이는 용도로 사용
+   - 값 관점에서는 값 공간의 typeof가 대상 심벌의 런타임 타입의 문자열을 반환
+4. ## class 에서 typeof
+
 ## item9 : 타입 단언보다는 타입 선언을 사용하기
+
+1. 타입스크립트에서 변수에 값을 할당하고 타입을 부여하는 방법
+   - 타입 선언 ( : )
+   - 타입 단언 ( ~ )
+2. 타입 선언
+   - 그 값이 선언된 타입임을 명시
+3. 타입 단언
+   - 타입스크립트가 추론한 타입이 있더라도 단언된 타입으로 간주
+4. 타입 단언이 꼭 필요한 경우가 아니라면 타입 선언 사용
+   - 아래처럼 오류가 발생할 수 있기때문에 타입 단언보단 타입 선언을 사용하자
+     ```ts
+     interface Person {
+       name: string;
+     }
+     const alice: Person = {};
+     // Person 유형에 필요한 name이 {}에 없음!!!
+     const bob = {} as Person;
+     // 정상 동작
+     ```
+5. 화살표 함수의 타입 선언
+
+   - 원하는 타입을 명시하고 할당문의 유효성을 검사하도록 선언
+
+     ```ts
+     interface Person {
+       name: string;
+     }
+
+     const people: Person[] = ["alice", "bob", "jan"].map(
+       (name): Person => ({ name })
+     );
+     ```
+
+6. 타입스크립트보다 타입 정보를 더 잘 알때느 타입 단언문과 null 아님 단언문 사용
+   - 타입스크립트는 DOM 엘리먼트에 접근할 수 없다. 그래서 currentTarget이 버튼인지도 알수없음. 이럴때 우리는 타입 단언문을 써야 한다.
+     ```ts
+     document.querySeletor("#myButton").addEventListener("click", (e) => {
+       e.currentTarget;
+       const button = e.currentTarget as HTMLButtonElement;
+       button;
+     });
+     ```
+   - 변수에 접두사로 쓰이는 !를 사용해서 null이 아님을 단언할 수 있음. 대신 null이 아니라고 확신할때만 사용해야함.
+     ```ts
+     const elNull = document.getElementById("foo");
+     // HTMLElement | null
+     const el = document.getElementById("foo")!;
+     // HTMLElement
+     ```
+   - unKnown은 모든 타입의 서브타입이기 떄문에 임의의 타입 간에 변환을 가능하게 하지만 위험한 동작이기 때문에 자제하자!
 
 ## item10 : 객체 래퍼 타입 피하기
 
+1. 기본형과 객체형
+   - string 기본형에는 메서드가 없기 때문에 아래와 같은 코드를 동작시키려면 기본형을 String 객체형으로 래핑하고 > 메서드 호출 > 래핑객체를 버리는 순으로 동작하는데 여기서 기본형 string은 객체형 String을 받을 수 X, 그렇기 때문에 객체형을 직접적으로 사용하거나 인스턴스를 생성하는것은 피해야한다.
+
 ## item11 : 잉여 속성 체크의 한계 인지하기
+
+1. 타입스크립의 잉여 속성 체크
+
+   - 타입이 명시된 변수에 객체 리터럴을 할당할때 타입스크립트는 해당 타입의 속성이 있는지, 그 외에 속성이 없는지 확인한다.
+
+     ```ts
+     interface Room {
+       numDoors: number
+       ceilingHeightFt: number
+     }
+
+     const r: Room {
+       numDoors: 1,
+       ceilingHeightFt: 10,
+       elephant: 'present'
+     }
+     // Room에 elephant 없삼!!
+     ```
+
+     구조적 관점에서는 오류가 나지 않아야하지만, 구조적 타입 시스템에서 발생 할 수 있는 오류를 잡을 수 있도록 잉여 속성 체크라는 과정이 수행되서 오류가 발생했다. 하지만 잉여 속성 체크 또한 조건에 따라 동작하지 않는 다는 한계가 있다.
