@@ -75,6 +75,49 @@ class는 js때도 유지되니 잘못생각한거였음
 어려워서 8장 패스  
 
 ## item9 : 타입 단언보다는 타입 선언을 사용하기
+TS에서 변수에 값을 할당하고 타입을 부여하는 방법은 두가지임
+```ts
+interface Person {name:string}
+cosnt alice: Person = {name: 'Alice'}; // 타입 선언
+const bob = {name: 'Bob'} as Person;   // 타입 단언
+```
+이 두가지 방법은 결과가 같아보이지만 다름  
+```ts
+const alice: Person = {}; //error
+const bob = {} as Person
+```
+타입 선언은 할당되는 값이 인터페이스를 만족하는지 검사하지만  
+타입 단언은 이를 무시하고 강제 타입지정해버림  
+```ts
+interface Person {name:string}
+const alice: Person = {
+    name:'Alice',
+    occupation: 'dasda' // error
+}
+const bob = {
+    name:'bob',
+    occupation: 'adasda'
+} as Person // not error
+```
+꼭 필요한 경우가 아니면 타입 단언대신 타입선언을 사용해야 강력하게 체크할 수 있다.  
+다만 alice에 리터럴로 값을 부여하는게 아닌,  
+변수에 값을 미리 넣어놓고, 해당 변수를 부여하는 것이라면 에러가 나지않음(리터럴이 아니라면 상위집합 허용);  
+
+```ts
+const p = {name:'Alice',occupation:'dasda'};
+const alice2: Person = p; // not error
+```
+
+타입 단언을 사용해야 하는 경우는 아래와 같다.
+```ts
+document.querySelector('#myBtn').addEventListener('click',e => {
+    e.currentTarget // 타입은 EventTarget
+    const button = e.currentTarget as HTMLButtonElement;
+    buttomn         // 타입은 HTMLButtonElement
+})
+```
+타입스크립트에서는 dom에 접근불가하므로 myBtn이 버튼인지 알지 못함.
+하지만 우리는 myBtn이 버튼인지 확신하고있으므로 타입단언(as)를 사용하여 타입을 부여한다. 
 
 ## item10 : 객체 래퍼 타입 피하기
 
