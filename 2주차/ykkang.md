@@ -220,4 +220,76 @@
      // Room에 elephant 없삼!!
      ```
 
-     구조적 관점에서는 오류가 나지 않아야하지만, 구조적 타입 시스템에서 발생 할 수 있는 오류를 잡을 수 있도록 잉여 속성 체크라는 과정이 수행되서 오류가 발생했다. 하지만 잉여 속성 체크 또한 조건에 따라 동작하지 않는 다는 한계가 있다.
+     구조적 관점에서는 오류가 나지 않아야하지만, 구조적 타입 시스템에서 발생 할 수 있는 오류를 잡을 수 있도록 잉여 속성 체크라는 과정이 수행되서 오류가 발생했다.
+2. 잉여속성체크와 할당가능검사는 별도의 과정!
+    - 아래 코드를 보면 첫번째 코드에서는 잉여속성이 체크되었지만 두번째 코드에선 잉여속성 체크가 되지 않았다. 잉여속성체크와 할당가능검사는 별도의 과정이라 두 코드 전부 할당가능검사에서는 통과가 된 상태고 아래 코드는 객체리터럴을 할당하지 않아서 잉여속성체크가 일어나지 않은거임
+      ```ts
+        const obj {
+          numDoors: 1,
+          ceilingHeightFt: 10,
+          elephant: 'present'
+        }
+        
+        const r:Room = obj
+        // 정상
+        ```
+3. 엄격한 객체 리터럴 체크 
+    - 잉여속성체크는 말그대로 필요한 속성 이외의 속성까지 체크하기 때문에 엄격한 객체 리터럴 체크라고 표현한다.
+4. 잉여속성체크를 피하는 방법
+    - 타입 단언은 잉여속성체크를 무시하게 만든다.
+        ```ts
+        const obj {
+          numDoors: 1,
+          ceilingHeightFt: 10,
+          elephant: 'present'
+        } as Room
+
+        // 통과
+        ```     
+    - *인덱스 시그니처를 사용하면 잉여속성을 피할 수 있음. 
+      > 인덱스 시그니처는 객체가 <key, vlaue>형식이며 key와 value의 타입을 정확하게 명시해야하는 경우 사용할 수 있는대, 객체의 특정 value에 접근할 때 그 value의 key를 문자열로 인덱싱해 참조할 수 있다.
+      ```ts
+      const dog = {
+        breed: "retriever",
+        name: "elice",
+        bark: () => console.log("woof woof"),
+      };
+ 
+      dog["breed"]; 
+      // value의 key인 breed 문자열로 객체의 value 접근 => 'retriever'
+      ```
+    - 아래 코드들 처럼 없는 잉여속성이 있을때도 인덱스 시그니처를 사용하면 잉여속성 체크를 피할 수 있는대 두번째 코드처럼 타입을 선언해준 객체가 빈 객체일때 인덱스 시그니처로만 이루어져있다면 오류를 발생시키지 않는 문제가 생길 수 있다.
+      ```ts
+        interface Options {
+          darkMode: boolean
+          [otherOptions: string] : unKnown;
+        }
+
+        const o: Oprions = {darkmode: true}
+        // 정상 동작
+        ```
+
+        ```ts
+        type ArrStr = {
+          [key: string]: string | number;
+          [index: number]: string;
+        };
+    
+        const a: ArrStr = {}; 
+    
+        a["str"]; // 오류 x
+        ```
+5. 약한 타입
+    - 선택적 속성만 가지는 약한 타입에서는 잉여속성체크와 비슷한 체크가 동작하게 되는데 
+      ```ts
+      interface LineChartOptions {
+        logscale?: boolean;
+        invertedYAxis?: boolean;
+        areaChart?: boolean;
+      }
+
+      const opts = { logScale: true };
+      const o: LineChartOptions = opts;
+      // 오류
+      ```
+      위 코드는 구조적 관점에서는 모든 속성이 일단 선택적이기 때문에 모든 객체를 포함할 수 있을 것 같지만 저렇게 약한 타입일땐 타입스크립트가 별도의 공통 속성체크라는 검사를 한다. 즉 값 타입과 선언 타입에 공통된 속성이 있는지 체크를 수행하게 되어 위 코드에서 오류를 발생시킨다. 잉여 속성 체크와 같이 오타 검사에도 탁월하지만 잉여속성체크는 객체리터럴 할당에만 동작하는 반면 공통 속성체크는 약한 타입과 관련된 할당문 마다 모두 수행한다.
