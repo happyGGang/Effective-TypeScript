@@ -33,6 +33,46 @@ const double: [number, number] = triple;
 ```
 
 ## item8 : 타입 공간과 값 공간의 심벌 구분하기
+```ts
+interface Cylinder {
+    radius: number;
+    height: number;
+}
+
+const Cylinder = (radius: number, height: number) => ({radius,height})
+// 위의 두 Cylinder는 독립적인 타입이며, 값이다.  
+// 그래서 서로 아무런 관련도 없음.  
+// 위 문법은 Implicit return이라고 부르며 나중에 추가 공부할 예정  
+
+// 아무튼 위 상황일때 Cylinder가 타입,값 두 가지 모두로 쓰일수 있는 특징떄문에 아래와 같은 오류를 야기할 수 있음  
+function calculateVolume(shape: unknown) {
+    if (shape instanceof Cylinder) {
+        shape.radius
+        // {} 형식에 'radius' 속성이 없습니다.
+    }
+}
+// instanceof는 js의 런타임 연산때 수행하므로 Cylinder의 타입에 대해 접근할 수 없어서 함수를 참조함  
+```
+
+타입스크립트에서 class와 enum은 타입과 값 두가지 가능한 예약어임  
+밑의 예제는 타입으로 쓰임  
+```ts
+class Cylinder {
+    radius=1;
+    height=1;
+}
+function calculateVolume(shape:unknown) {
+    if(shape instanceof Cylinder) {
+        shape        //정상 타입은 Cylinder
+        shape.radius //정상 타입은 number
+    }
+}
+```
+클래스가 타입으로 쓰일때는 형태가 사용되는 반면, 값으로 쓰일때는 생성자가 사용됨  
+그런데 instanceof는 js런타임연산때 수행되는데 타입으로 쓰일수있나? 라고생각했지만  
+class는 js때도 유지되니 잘못생각한거였음  
+
+어려워서 8장 패스  
 
 ## item9 : 타입 단언보다는 타입 선언을 사용하기
 
