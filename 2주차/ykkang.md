@@ -138,10 +138,67 @@
      const v1 = "string literal";
      ```
      그러나 class나 enum은 타입도 값도 모두 가능한 예약어라 문맥을 통해 값인지 타입인지 파악해야한다.
-3. 값과 타입에서 각각 다르게 동작하는 typeof 연산자
-   - 타입으로 사용될때는 값을 읽고 타입을 리턴, 타입 공간에서는 보다 큰 타입의 일부분으로 사용, type 구문으로 이름을 붙이는 용도로 사용
-   - 값 관점에서는 값 공간의 typeof가 대상 심벌의 런타임 타입의 문자열을 반환
-4. ## class 에서 typeof
+3. 정리
+    - 타입 : type, interface
+    - 값 : const, let, var
+    - 둘다 : class, enum, 생성자 함수
+
+4. class
+    - 값으로 쓰일때: 생성자
+    - 타입으로 쓰일때 : 속성과 메서드
+    - 런타임때 타입체크를 하고 싶다면 class로 타입 선언하면 확인 가능
+
+5. typeof
+    - 값: 자바스크립트 런타임에 typeof 연산자로 해당 변수의 타입값에 대한 스트링 반환
+    - 타입: 타입스크립트의 타입
+      ```ts
+      interface Person {
+        name: string;
+      }
+      const p: Person = { name: 'ykkang' };
+
+      type T = typeof p; // 타입은 Person
+      const v1 = typeof p; // 값은 'object'
+      ```
+
+6. class에서 typeof
+    - 클래스는 값과 타입 모두 가능하기 때문에 각각의 환경에 따라 그 안에서 typeof의 동작도 달라진다.
+    -   값 : 자바스크립트에서 class는 함수로 동작하기때문에 'function'
+    - 타입 : 속성과 메소드
+      ```ts
+      // 클래스가 타입으로 쓰일 때는 형태(속성과 메서드가 사용됨)
+      class Cylinder {
+        radius=1;
+        height=1;
+      }
+
+      // 값으로 쓰일 때는 생성자가 사용됨.
+      function calculateVolume(shape: unknown) {
+        if (shape instanceof Cylinder) {
+          shape  // OK, type is Cylinder
+          shape.radius  // OK, type is number
+        }
+      }
+      const v = typeof Cylinder;  // Value is "function"
+      type T = typeof Cylinder;  // Type is typeof Cylinder
+
+      // 문제는 클래스의 타입은 생성자의 타입이라는 것임.
+      // 제너릭 이용해 생성자 타입과 인스턴스 타입 전환
+      type C = InstanceType<typeof Cylinder>;  // Type is Cylinder
+      ```
+7. 속성 접근자 []
+    - 속성 접근자 []는 타입으로 쓰일때에도 동일하게 동작 대신
+    obj['field']와 obj.field는 값은 같지만 타입은 다를 수 있기 때문에 타입을 얻고 싶을뗀 반드시 obj['field'] 처럼 써줘야함
+6. 두공간 사이에서 다른 의미를 가지는 코드 패턴
+  - this
+    - 값 : 자바스크립트 this 키워드
+    - 타입 : 다형성 this라고 불리는 타입스크립트의 타입
+  - &와 |
+    - 값 : and와 or 비트 연산자
+    - 타입 : 인터섹션과 유니온
+  const
+    - 값 : 변수 선언
+    - 타입 : as const 는 리터럴 또는 리터럴 표현식의 추론된 타입을 바꿈
 
 ## item9 : 타입 단언보다는 타입 선언을 사용하기
 
