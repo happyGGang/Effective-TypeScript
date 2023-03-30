@@ -120,5 +120,19 @@ document.querySelector('#myBtn').addEventListener('click',e => {
 하지만 우리는 myBtn이 버튼인지 확신하고있으므로 타입단언(as)를 사용하여 타입을 부여한다. 
 
 ## item10 : 객체 래퍼 타입 피하기
+10번은 래퍼객체에 대한 설명이 주를 이룸  
+타입스크립트에서는 string을 예시로 들었을때,  
+string 기본형과 래퍼객체를 별도로 모델링 한다 소개함  
+
+이말인 즉슨, string으로 타입을 설정시 length와 같은 String 래퍼객체의 메서드가 없다 하는 것  
+그래서 String와 string을 잘 구분지어서 사용해야 함  
+
+```ts
+const f = function (a:String, b:string) {
+    b=a; // error (String 형식의 인수는 string형식의 매개변수에 할당될 수 없음)
+}
+f('ddd')
+```
+그래서 래퍼객체 대신 string 기본 형식을 이용하라 함  
 
 ## item11 : 잉여 속성 체크의 한계 인지하기
