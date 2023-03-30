@@ -136,3 +136,39 @@ f('ddd')
 그래서 래퍼객체 대신 string 기본 형식을 이용하라 함  
 
 ## item11 : 잉여 속성 체크의 한계 인지하기
+item9에서 봤듯이 타입이 명시된 변수에 객체 리터럴를 할당하면,  
+해당 타입의 속성이 있는지, 또 그 외의 필요없는 속성이 있는지 검출해냄  
+
+이는 구조적 타이핑 관점에서 봤을때 "되야하는게 아닌가?" 싶었음  
+책에서도 그렇게 소개하고 있고,  
+실제로 객체 리터럴 대신 객체변수를 대입하면 잘 들어감  
+왜 리터럴을 안되고 변수로 넣을땐 잘 들어가는가?  
+
+<!-- 이는 '잉여 속성 체크' 라는 과정이 수행되었기 때문이라 함   -->
+이는 타입스크립트는 단순히 런타임에 예외를 던지는 코드에 오류를 찾는것 뿐 아니라,  
+의도와 다르게 작성된 부분까지 찾아주려고 하기 때문  
+```ts
+interface Options {
+    title: string;
+    darkMode?: boolean;
+}
+function createWindow(options: Options) {
+    if(options.darkMode) {
+        setDarkMode();
+    }
+}
+createWindow({
+    title: 'Spider Solitaire',
+    darkmode: true // 'error' ('darkMode'를 쓰려고 했습니까?)
+})
+```
+
+여기서 Options는 허용범위가 매우 넓음  
+document, HTMLAnchorElement도 title객체를 가지고 있고, darkMode는 필수값이 아니기 떄문  
+순수한 구조적 타입 체커는 이런 종류를 찾아내지 못한다 함  
+
+이 때 '잉여속성체크' 라는 것이 있어 필요없는 속성이 추가로 했을때 검사해주는 것인데..  
+document, HTMLAnchorElement와 같은 객체변수나 타입단언(as)에서는 '잉여속성체크'가 실행되지않음  
+
+흠.. 잉여속성체크가 뭔지, 일반속성체크(구조적 타입체커)의 차이점은 이해했는데  
+document, HTMLAnchorElement를 대입할때 잉여속성체크를 하는 방법은 없나 모르겠음  
