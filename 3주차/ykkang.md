@@ -39,6 +39,27 @@
   const div: BinaryFn = (a, b) => a / b;
   ```
 
+2. 다른 함수의 시그니처를 참조하려면 typeof fn 사용
+   ```ts
+   async function checkedFetch(input: RequestInfo, init?: RequestInit) {
+     const response = await fetch(input, init);
+     if (!resoponse.ok) {
+       throw new Error("error");
+     }
+     return response;
+   }
+   ```
+   이 코드에서 fetch는 함수 시그니처가 이미 있는 자바스크립트 모듈이기 떄문에 아래 코드처럼 간결하게 수정할 수 있다.
+   ```ts
+   const checkFetch: typeof fetch = async (input, init) => {
+     const response = await fetch(input, init);
+     if (!response.ok) {
+       throw new Error("error");
+     }
+     return response;
+   };
+   ```
+
 ## 아이템 13 : 타입과 인터페이스의 차이점 알기
 
 ## 아이템 14 : 타입 연산과 제너릭 사용으로 반복 줄이기
