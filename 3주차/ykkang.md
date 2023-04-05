@@ -90,6 +90,60 @@
 3. 차이점
 
 - 인터페이스는 유니온 타입 같은 복잡한 타입을 확장하지 못해 &과 타입을 사용해야한다.
--
+- 인터페이스는 보강 가능
 
 ## 아이템 14 : 타입 연산과 제너릭 사용으로 반복 줄이기
+
+1. 반복을 줄이는 방법
+
+```ts
+// 한 인터페이스를 확장해서 중복 제거하기
+interface Person {
+  firstName: string;
+  lastName: string;
+}
+
+// 인터페이스로 확장
+interface PersonWithBirthDate extends Person {
+  birth: Date;
+}
+
+// 타입으로 확장
+type PersonWithBirthDate = Person & { birth: Date };
+
+// 부분집합으로 중복 제거하기
+interface State {
+  userId: string;
+  pageTitle: string;
+  recentFiles: string[];
+  pageCounts: string;
+}
+
+type TopNavState = {
+  userId: State["userId"];
+  pageTitle: State["pageTitle"];
+  recentFiles: State["recentFiles"];
+};
+
+// 매핑된 타입으로 중복 한번 더 제거하기
+type TopNavState = {
+  [k in "userId" | "pageTitle" | recentFiles]: State[k];
+};
+
+// pick
+type TopNavState = Pick<State, "userId" | "pageTitle" | "recentFiles">;
+
+// 유니온을 인덱싱하기
+interface SaveAction {
+  type: "save";
+}
+
+interface LoadAction {
+  type: "load";
+}
+
+type Action = SaveAction | LoadAction;
+type ActionType = Action["type"];
+
+// pick, partial, ReturnType .. 등등 제네릭 타입으로 중복제거
+```
