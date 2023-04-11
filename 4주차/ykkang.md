@@ -8,6 +8,38 @@
 
 ## item 16: number인덱스 시그니처보다는 Array, 튜플, ArrayLike를 사용하기
 
+1. 숫자는 key로 사용 불가능
+2. 배열의 타입은 object
+
+   ```ts
+   const arr = [1, 2, 3];
+   console.log(typeof arr); // object\
+
+   // 배열의 타입은 객체, 그래서 숫자 인덱스를 사용하는것이 맞지만
+   // 인덱스 요소들은 숫자로 반환되어 문자열 키로 접근해도 배열 요소에 접근 가능
+   console.log(arr["0"]); // 1
+   ```
+
+3. 타입스크립트는 숫자형 키를 허용
+
+   ```ts
+   //lib.es%.d.ts
+
+   interface Array<T> {
+     [n: number]: T;
+   }
+   ```
+
+4. 런타임에서는 문자열 키로 인식하기 때문에 작동하지는 않음
+
+   ```ts
+   const xs = [1, 2, 3];
+   const x0 = x[0]; // ok
+   const x1 = x["1"]; // 타입에러가 나지만 실제로 동작하지는 않음
+   ```
+
+5. 인덱스 시그니처에 number를 사용하기보다 Array나 ArrayLike 타입을 쓰자
+
 ## item 17: 변경 관련된 오류 방지를 위해 readOnly 사용하기
 
 ## item 18: 매핑된 타입을 사용하게 값을 동기화하기
