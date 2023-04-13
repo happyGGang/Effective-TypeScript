@@ -85,6 +85,37 @@ ArrayLike와 같은 다른 방법을 사용하라 함
 여기서도 런타임 시와, 빌드시에 차이점으로 인한 문제를 말하는 듯한데..  
 이 부분은 내가 타입스크립트를 자주 써봐야 감이 잡힐 듯 하다  
 
+## item 17 : 변경 관련된 오류 방지를 위해 readonly 사용하기
+
+삼각수(1,1+2,1+2+3,...)를 출력하는 코드임  
+```ts
+function print삼각수(n: number) {
+    const nums = [];
+    for (let i = 0; i < n; i++>) {
+        nums.push(i);
+        console.log(arraySum(nums));
+    }
+}
+function arraySum(arr: number[]) {
+    let sum = 0, num;
+    while((num= arr.pop()) !== undefined) {
+        sum += num;
+    }
+    return sum;
+}
+print삼각수(5)
+```
+
+위 코드를 실행하면 예상과 달리  
+0,1,2,3,4 순서대로 나온다 함  
+arraySum이 nums를 변경하지 않는다고 간주해서 문제가 발생했다고 하는데...  
+왜 for문 안에서 배열이 빈배열로 바뀌는지 모르겠음  
+>>아 pop이 있네  
+이 에러를 체크하려면 arraySum에 readonly 접근제어자를 사용하면 됨  
+이로 인해 새로 배열을 쓰거나 pop 등의 메서드를 호출할 수 없게 됐음  
+
+요소를 지우지 않을 것이라면 readonly로 방지하자
+
 ## item 18 : 매핑된 타입을 사용하여 값을 동기화하기
 
 솔직히 문법을 잘 모르겠어서 이해 못함  
