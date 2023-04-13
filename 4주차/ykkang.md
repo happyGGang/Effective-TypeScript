@@ -79,27 +79,31 @@
 
 3. readonly를 쓸려면 고로 배열을 수정안하면 된다
 
-````ts
-      function arraySum(arr: readonly number[]) {
-         // ~~ readonly numner[] 형식에 pop 속성이 없음
-         let sum = 0;
-         for(const num of arr) {
-            sum += num
-         }
-         return sum
+   ````ts
+   function arraySum(arr: readonly number[]) {
+      // ~~ readonly numner[] 형식에 pop 속성이 없음
+      let sum = 0;
+      for(const num of arr) {
+         sum += num
       }
+      return sum
+   }
 
 
-      function printTriangles(n: number) {
-         const nums = []
-         for(let i = 0; i < n;  i++) {
-            nums.push(i)
-            console.log(arraySun(nums))
-         }
+   function printTriangles(n: number) {
+      const nums = []
+      for(let i = 0; i < n;  i++) {
+         nums.push(i)
+         console.log(arraySun(nums))
       }
-      ```
+   }
+   ```
+   ````
+
 4. 매개변수를 변경하지 않는다면 readonly를 쓰자
 5. readonly는 얕게 동작한다
 
 ## item 18: 매핑된 타입을 사용하게 값을 동기화하기
-````
+
+1. 새로운 속성이 추가될때 매핑된 타입을 사용해서 관련된 값과 타입을 동기화 시켜야함.
+2. 인터페이스에 새로운 속성을 추가할 때 선택을 강제하도록 매핑된 타입을 고려해야함.
