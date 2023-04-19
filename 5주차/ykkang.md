@@ -27,3 +27,15 @@
 5. as const로 기본동작 재정의하기.
 
 ## item 22 : 타입 좁히기
+
+1. 넓은 타입에서 > 좁은 타입으로 진행하는 과정
+2. 타입 좁히는 방법
+   - 분기문
+   - 함수반환
+   - interfaceof
+   - 속성 체크
+   - Array.isArray 같은 일부 내장함수
+   - 명시적 태그
+   - 타입 가드
+3. 타입 가드
+   - 참고 : https://chanhuiseok.github.io/posts/ts-2/
