@@ -73,7 +73,7 @@ getComponent(vec,'x');
 getComponent(vec,'a');
 ```
 잘생각해보면 string이 아닌 더 소집합인 'x'|'y'|'z'의 타입만을 받아들이기 때문에  
-string으로 타입추론이 날시 경고를 내주는 거였음  
+string으로 타입추론이 날시 경고를 내주는 거였음   
 
 이처럼 타입스크립트는 string, number와 같은 단계로 타입을 추론해주는데,  
 이를 방지하기 위해서는 let 대신 const를 이용한다.  
@@ -83,9 +83,65 @@ const a = 3;
 a는 3에서 불변한 값이기 떄문에 타입도 3으로 제한되어버린다.
 ```
 
+## item 22 : 타입 좁히기  
+  
+타입 좁히기는 타입 넓히기의 반대를 뜻하며  
+가장 대표적인 예시는 null 체크임  
+```ts
+const el = document.getElementById('foo'); // 타입이 HTMLElement | null
+if(el) {
+    el // 타입이 HTMLElement
+    el.innerHTML = 'party time'.blink();
+} else {
+    el // 타입이 null
+    alert('no element')
+}
+```
+위 예시에서 if문 내에 도달하려면 el이 null이 아니여야 하기때문에  
+타입이 HTMLElement로 좁혀진다.  
+속성체크로도 타입을 좁힐 수 있음  
+```ts
+interface A {a: number}
+interface B {b: number}
+function pickAB{ab: A | B} {
+    if('a' in ab) {
+        ab // 타입이 A
+    } else {
+        ab // 타입이 B
+    } 
+    ab // 타입이 A | B
+}
+```
 
+타입스크립트는 이처럼 조건문에서 타입좁히기가 매우 쉬운데,  
+타입을 섣불리 판단하는 실수를 저지를 수 있어 꼼꼼히 확인해야 함.  
+예를 들어  
+```ts
+const el = document.getElementById('foo') // 타입이 HTMLElement/null
+if(typeof el === 'object') {
+    el; // 타입이 HTMLElement | null
+    //js에서는 typeof null이 object이기때문에 타입좁히기가 수행되지 않았다.
+}
+```
 
+타입을 좁히는 다른방법  
+ - 태그된 유니온 | 구별된 유니온
+ 타입 좁히기를 수행할 객체의 예상 타입들을 인터페이스들로 정리 후,  
+ 분기문을 이용하여 타입을 좁힌다.  
+ - 사용자 정의 타입 가드  
+ ```ts
+ function isInputElement(el: HTMLElement): el is HTMLInputElement {
+    return 'value' in el;
+ }
 
-
-
-
+ function getElementContent(el: HTMLElement) {
+    if (isInputElement(el)) {
+        el; // 타입이 HTMLInputElement
+        return el.value;
+    }
+    el; // 타입이 HTMLElement
+    return el.textContent;
+ }
+ ```
+ 타입좁히기용 함수를 만들어 조건문에 사용했음  
+ 
