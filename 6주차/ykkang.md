@@ -100,3 +100,107 @@
 3. 속성이 선택적일 경우 속성체크가 따로 필요하다
 
 ## item 25 : 비동기 코드에는 콜백 대신 asycn 함수 사용하기
+
+1.  콜백지옥이란?
+    실행 순서도 코드 순서와 반대, 보기도 빡심
+
+    ````js
+    fetchURL(url1, (res1) =>{
+    fetchURL(url2, (res2) =>{
+    fetchURL(url3, (res3) =>{
+    console.log(1);
+    });
+    console.log(2);
+    });
+    console.log(3);
+    });
+    console.log(4);
+
+        //로그
+        //4
+        //3
+        //2
+        //1
+        ```
+
+    ````
+
+2.  프로미스(미래에 가능해질 어떤 것을 나타냄)
+
+- 콜백지옥을 해결하기 위해 도입. 진행 순서도 코드 순서와 같아졌고 가독성도 굿
+
+  ```js
+  const pagePromise = fetch(url1);
+
+  pagePromise
+    .then((res1) => {
+      return fetch(url2);
+    })
+    .then((res2) => {
+      return fetch(url3);
+    })
+    .then((res3) => {
+      return fetch(url4);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  ```
+
+- Promise.all 써서 병렬로 표현도 가능함
+
+  ```js
+  const promise1 = Promise.resolve(3);
+  const promise2 = 42;
+  const promise3 = new Promise((resolve, reject) => {
+    setTimeout(resolve, 100, "foo");
+  });
+
+  Promise.all([promise1, promise2, promise3]).then((values) => {
+    console.log(values);
+  });
+  // Expected output: Array [3, 42, "foo"]
+  ```
+
+- promise.race
+
+  - 콜백보다 코드작성, 타입추론 면에서 프로미스가 더 좋음!
+  - 먼저 완료되는 것을 이행
+  - 타입 구문 없어도 반환 타입 Promise<Response>로 추론
+
+    ```ts
+    async function parallelFetch() {
+      // 모든 promise가 resolve 되면
+      // promise all의 then이 호출
+
+      // 각각의 fetch는 병렬로 처리
+      const [res1, res2, res3] = await Promise.all([
+        fetch(
+          // 이때 ts는 각 res의 타입을 response로 추론
+          url1
+        ),
+        fetch(url2),
+        fetch(url3),
+      ]);
+    }
+    ```
+
+3. async await
+
+- 프로미스보다는 코드가 더 간결하고 async는 항상 프로미스를 반환하도록 강제하기때문에 프로미스를 생성하기 보다는 async await를 쓰자
+
+```js
+async function asyncFetchExceptHandle() {
+  try {
+    const promise1 = await fetch(url1);
+    // fetch가 완료될때 까지 기다린다.
+    const promise2 = await fetch(url2);
+    // fetch가 완료될때 까지 기다린다.
+    const promise3 = await fetch(url3);
+    // fetch가 완료될때 까지 기다린다.
+  } catch (err) {
+    console.log(err);
+    // try내 fetch들 에서 reject 발생시 catch 내에서 에러 핸들링
+  }
+}
+```
