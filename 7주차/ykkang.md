@@ -165,3 +165,97 @@
 1. 가독성, 명시적 타입구문 필요성을 줄일려면 직접 구현하는것보다 내장 메소드나, 서드파티 라이브러리 사용하자
 
 ## item 28 : 유효한 상태만 표현하는 타입 지향하기
+
+1. 무효한 상태 사용하지말자
+
+   ```ts
+   interface State {
+     pageText: string;
+     isLoading: boolean;
+     error?: string;
+   }
+
+   function renderPage(state: State) {
+     if (state.error) {
+       // 에러도 있고
+       return `Error! unable to load ${currentPage}: ${state.error}`;
+     } else if (state.isLoading) {
+       // 로딩도 걸려야하면
+       return `Loading ${currentPage}...`;
+     }
+     return `<h1>${currentPage}</h1>\n${state.pageText}`; // 뭘 뱉어야하나
+   }
+
+   async function chagePage(state: State, newPage: string) {
+     state.isLoading = true;
+     // 에러 초기화 빠짐
+     try {
+       const res = await fetch(getUrlFroPage(newPage));
+       if (!res.ok) {
+         throw new Error(`unable to load ${newPage} : ${res.statsText}`);
+       }
+       const text = await res.text();
+       state.isLoading = false;
+       state.pageText = text;
+     } catch (e) {
+       state.error = "" + e;
+       // 에러있을때 isLoading false 시켜주는 코드빠짐
+     }
+   }
+   ```
+
+2. 코드가 길어지더라도 유효한 상태만 표현하자
+
+   ```ts
+   // 네트워크 요청과정 각각 상태를 명시적으로 모델링하는 태그된 유니온 사용
+   interface ReqPending {
+     state: "pending";
+   }
+
+   interface ReqError {
+     state: "error";
+     error: string;
+   }
+
+   interface ReqSuccess {
+     state: "ok";
+     PageText: string;
+   }
+
+   type ReqState = ReqPending | ReqError | ReqSuccess;
+
+   interface State {
+     currentPage: string;
+     requests: {
+       [page: string]: ReqState;
+     };
+   }
+
+   function renderPageFix(state: State) {
+     const { currentPage } = state;
+     const reqState = state.requests[currentPage];
+     switch (reqState.state) {
+       case "pending":
+         return `Loading ${currentPage}`;
+       case "error":
+         return `Error ! Unable to load ${currentPage}: ${reqState.error}`;
+       case "ok":
+         return `<h1>${currentPage}</h1>\n${reqState.PageText}`;
+     }
+   }
+
+   async function changePageFix(state: State, newPage: string) {
+     state.requests[newPage] = { state: "pending" };
+     state.currentPage = newPage;
+     try {
+       const res = await fetch(getUrlForPage(newPage));
+       if (!res.ok) {
+         throw new Error(`Unable to load ${newPage}: ${res.statusText}`);
+       }
+       const pageText = await res.text();
+       state.requests[newPage] = { state: "ok", pageText };
+     } catch (e) {
+       state.requests[newPage] = { state: "error", error: "" + e };
+     }
+   }
+   ```
