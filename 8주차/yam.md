@@ -80,5 +80,52 @@ function getForegroundColor(page?: string) {
 정도가 적당할 듯  
 이렇게 바꾸면 반환값의 타입이 바뀌워도 주석자체를 바꿀 이유가 사라짐  
 
+## item 31 : 타입 주변에 null 값 배치하기  
+strictNullChecks 설정을 키면,  
+null/undefined 값 관련된 오류들이 갑자기 나타날 수 있음.  
+값이 모두 null이거나 null이 아닌경우로 **분명히 구분** 된다면,  
+값을 다르기 쉬움.  
+
+아래는 숫자들의 최솟값과 최댓값을 계산하는 extent 함수임  
+```ts
+function extent(nums: number[]) {
+    let min, max;
+    for (const num of nums) {
+        if (!min) {
+            min = num;
+            max = num;
+        } else {
+            min = Math.min(min, num);
+            max = Math.max(max, num);
+        }
+    }
+    return [min, max];
+}
+```  
+이 코드에는 아래의 결함이 있음  
+ - 최솟값이나 최댓값이 0인 경우, 값이 덧씌워져 버림  
+ - nums배열이 비어있다면 함수는 [undefined, undefined]를 반환해버림  
+
+개선안  
+```ts
+function extent(nums: number[]) {
+    let result: [number, number] | null = null;
+    for (const num of nums) {
+        if (!result) {
+            result = [num, num];
+        } else {
+            result = [Math.min(num,result[0]), Math.max(num, result[1])];
+        }
+    }
+    return [min, max];
+}
+```
+이제 반환타입이 [number,number] | null이 되어서 사용하기가 수월해지며 버그도 수정됨  
+이 챕터의 주제를 잘 설명하진 못하겠지만  
+타입스크립트랑 크게 관련있는 주제같지 않다고 생각됨  
+그냥 단순한 버그 수정으로 보임  
+
+
+
 
 
