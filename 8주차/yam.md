@@ -125,6 +125,39 @@ function extent(nums: number[]) {
 타입스크립트랑 크게 관련있는 주제같지 않다고 생각됨  
 그냥 단순한 버그 수정으로 보임  
 
+## item 32 : 유니온의 인터페이스보다는 인터페이스의 유니온을 사용하기  
+유니온 타입의 속성을 가지는 인터페이스를 작성하고 있다면,  
+반대로 인터페이스를 유니온 타입으로 적용시키는게 더 낫지 않을까 생각해봐야 함  
+
+```ts
+interface Layer {
+    layout: Fill | Line | Point;
+    paint: Fill | Line | Point;
+}
+```
+위 코드의 잘못된 점은  
+애초에 layout타입이 예를들어 fill이면 paint도 같은 fill 타입이 되어야함  
+그런데 소스로만 분석하자면 layout과 point가 서로 다른 타입을 가질 수 있게되버림  
+
+굳이 중복되게 생성할 필요없이 아래처럼 생성한다.  
+```ts
+interface FillLayer {
+    layout: Fill;
+    paint: Fill;
+}
+interface LineLayer {
+    layout: Line;
+    paint: Line;
+}
+interface PointLayer {
+    layout: Point;
+    paint: Point;
+}
+type Layer = FillLayer|LineLayer|PointLayer;  
+```  
+
+뒤의 내용들은 굳이 기록하지 않아도 될 내용으로 보여 읽고 넘김  
+기억하지 못할까봐 기록함.  
 
 
 
