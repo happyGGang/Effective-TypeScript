@@ -1,6 +1,6 @@
 # 타입 설계
 
-## item : 사용할 때는 너그럽게, 생성할 때는 엄격하게
+## item 29: 사용할 때는 너그럽게, 생성할 때는 엄격하게
 
 1. 함수 시그니처 구현시 매개변수는 타입 범위가 넓게, 반환값은 타입 범위를 구체적으로 만들어야한다.
 
@@ -80,12 +80,12 @@
 2. 결국 옵션이나 유니온 속성은 반환값보다 매개변수 타입에 적용
 3. 재사용을 위해 느슨한 구조와 스트릭한 구조를 항상 함께 도입
 
-## item : 문서에 타입 정보를 쓰지 않기
+## item 30: 문서에 타입 정보를 쓰지 않기
 
 1. 주석에 변수명과 타입정보 적기 금지
 2. 타입이 명확하지 않은 경우 변수명에 단위 정보 포함
 
-## item : 타입 주변에 null 값 배치하기
+## item 31: 타입 주변에 null 값 배치하기
 
 1. strictNullChecks 설정을 활성화 시키면 오류를 회피하기위해 null check하는 예외 처리 구문이 코드 전반에 추가해야함. 그러나, 값이 전부 null이거나 전부 null이 아닌 경우로 분명하게 구별될 수만 있다면 코드 작성이 훨씬 편함.
 
@@ -181,14 +181,185 @@
    }
    ```
 
-## item : 유니온의 인터페이스보다는 인터페이스의 유니온 사용하기
+## item 32: 유니온의 인터페이스보다는 인터페이스의 유니온 사용하기
 
-## item : string 타입보다 더 구체적인 타입 사용하기
+1. 유니온 타입의 속성을 가지는 인터페이스를 작성중이라면 인터페이스의 유니온 타입을 사용하는게 더 적절한지를 고려해야함.
 
-## item : 부정확한 타입보다는 미완성 타입을 사용하기
+   ```ts
+   // 유니온 타입의 속성을 가지는 인터페이스보다는
+   interface Layer {
+     layout: FillLayout | LineLayout | PointLayout;
+     point: FillPaint | LinePaint | PointPatin;
+   }
 
-## item : 데이터가 아닌, API와 명세를 보고 타입 만들기
+   // 인터페이스의 유니온 타입 추천
+   interface FillLayer {
+     layout: FillLayout;
+     paint: FillPaint;
+   }
 
-## item : 해당 분야의 용어로 타입 이름 짓기
+   interface LineLayer {
+     layout: LineLaout;
+     paint: LinePaint;
+   }
 
-## item : 공식 명칭에는 상표를 붙이기
+   interface PointLayer {
+     layout: PointLayout;
+     paint: PointPaint;
+   }
+   ```
+
+2. 여러 인터페이스를 유니온(태그된 유니온)으로 작성하는 것이 타입 좁히기에서 더 유리함
+
+   ```ts
+   interface FillLayer {
+       type : 'fill';
+       layout: FillLayout;
+       paint: FillPaint;
+   }
+   interface LineLayer {
+       type : 'line';
+       layout: LineLayout;
+       paint: LinePaint;
+   }
+   interface PointLayer {
+       type : 'point';
+       layout: PointLayout;
+       paint: PointPaint;
+   }
+
+   type Layer = FillLayer | LineLayer | PointLayer;
+
+   function drawLayer(layer: Layer) {
+     if(layer.type === 'fill') {
+       const {paint} = layer // type => FillPaint
+       const {layout} = layer // type =? FillPatin
+     }
+     <!-- ... -->
+   }
+   ```
+
+3. 태그된 유니온은 타입스크립트와 잘맞기 때문에(제어 흐름 분석에 좋음) 타입에 태그 넣는 것을 고려하자
+
+   ```ts
+   // 지양
+   interface Person {
+     name: string;
+     placeOfBirth?: string;
+     dateOfBirth?: Date;
+   }
+
+   // 지향
+   interface Person {
+     name: string;
+     birth?: {
+       place: string;
+       date: Date;
+     };
+   }
+   ```
+
+   만약 api 결과값에 손댈 수 없는 상황에서는 인터페이스의 유니온을 사용해서 속성 사이 관계 모델링 가능
+
+   ```ts
+   interface Name {
+     name: string;
+   }
+
+   interface PersonWithBirth extends Name {
+     placeOfBirth: string;
+     dateOfBirth: Date;
+   }
+
+   type Person = Name | PersonWithBirth;
+
+   function eulogize(p: Person) {
+     if ("placeOfBirth" in p) {
+       p;
+       const { dateOfBirth } = p;
+     }
+   }
+   ```
+
+## item 33: string 타입보다 더 구체적인 타입 사용하기
+
+1. 스트링 타입은 범위가 너무 넓음. 고로 구체적인 타입으로 만들어 쓰자
+
+   ```ts
+   // 스트링 남발한것보다
+   interface Album {
+     artist: string;
+     title: string;
+     releaseDate: string; //YYYY-MM-DD
+     recordingType: string; // 예를 들어 "live" "studio"
+   }
+
+   // 타입좁히기
+   type RecordingType = "studio" | "live"; //
+   interface AlbumFix {
+     artist: string;
+     title: string;
+     releaseDate: Date;
+     recordingType: RecordingType;
+   }
+   ```
+
+2. 위와 같은 방식으로 작성하면 좋은점 3가지
+
+- 타입을 명시적으로 정의해 다른 곳으로 값이 전달되어도 타입 정보 유지
+  ```ts
+    //함수 호출시 파라미터 타입이 string이 아니라 구체적 허용되는 값이 명시되어 있음.
+    function getAlbumsOfType(recordingType: RecordingType): AlbumFix[] {
+        <!-- ... -->
+    }
+  ```
+- 해당 타입 의미를 주석으로 설명하기 쉬움
+  ```ts
+  /** 이 녹음은 어떤 환경에서 이루어졌는지?  */
+  type RecordingType = "studio" | "live";
+  ```
+- keyof 연산자로 세밀하게 객체 속성 체크 가능
+
+  ```ts
+  var group: AlbumFix[] = [
+    {
+      artist: "Dreatm Threater",
+      recordingType: "studio",
+      releaseDate: new Date("1999-12-12"),
+      title: "Dance of the eternity",
+    },
+    {
+      artist: "Queen",
+      recordingType: "studio",
+      releaseDate: new Date("1990-10-12"),
+      title: "Let me live",
+    },
+  ];
+
+  pluck(group, "artist"); // ['Dreatm Threater', 'Queen']
+
+  // 이렇게하면 any가 너무 넓은 반환값을 유도해 key의 값이 string으로 T에서 허용하지 않는 key를 허용하게 됨.
+  function pluck(record: any[], key: string): any[];
+
+  // 이렇게하면 key가 string이라 너무 넓음
+  function pluck<T>(record: T[], key: string): any[];
+
+  // 이렇게 작성하면 완벽
+  type K = "artist" | "title" | "releaseDate" | "recordingType";
+
+  function pluck<T, K extends keyof T>(records: T[], key: K): T[K][] {
+    return records.map((r) => r[key]);
+  }
+  ```
+
+## item 34: 부정확한 타입보다는 미완성 타입을 사용하기
+
+1. 타입이 구체적일수록 좋지만 실수가 발생하기 쉬워 조심해야함
+2. 정확하게 타입을 모델링할 수 없다면, 부정확하게 모델링하지 말아야함
+3. any와 unknown 구분해서 사용
+
+## item 35: 데이터가 아닌, API와 명세를 보고 타입 만들기
+
+## item 36: 해당 분야의 용어로 타입 이름 짓기
+
+## item 37: 공식 명칭에는 상표를 붙이기
