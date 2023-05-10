@@ -205,3 +205,43 @@ typeof 더 잘 사용 불가하다.
 그 속성이 단순 명칭일지, 어떤 언어를 이용하여 표현해야 하는지에 따라 속성명이 name이 아닌 더 자세하게 표현될 수 있음  
 적당히 자세하게 기술하여 모든 소스코드 사용자를 편하게 하자  
 다만, 약어문서를 만들어 잘 공유한다면 소스코드내에서 자세히 표현하지 않더라도 충분하다고 생각함  
+
+## item 37 : 공식 명칭에는 상표를 붙이기  
+벡터같은 예시를 왜드는지 모르겠다 좀 쉽게 주면 안되나?  
+나는 문관데?  
+사실 귀찮아서 그냥 소스를 안봤음  
+```ts
+interface Vector2D {
+    x: number;
+    y: number;
+}
+function calculateNorm(p: Vector2D) {
+    return Math.sqrt(p.x * p.x + p.y * p.y);
+}
+
+calculateNorm({x:3, y:4}); //정상 결과 5
+const vec3D = {x:3, y:4, z:1};
+calculateNorm(vec3D); //정상! 결과는 동일하게 5
+```
+이 코드에 버그가 없긴하지만 구조적 타이핑때문에  
+3차원벡터의 객체를 calculateNorm에게 넘겨도 잘 작동됨.  
+3차원벡터 객체의 허용자체를 없애려면 공식명칭을 사용하라 함  
+```ts
+interface Vector2D {
+    _brand: '2d';
+    x:number;
+    y:number;
+}
+function vec2D(x: number, y:number); Vector2D {
+    retrun {x, y, _brand: '2d'}
+}
+function calculateNorm(p: Vector2D) {
+    return Math.sqrt(p.x * p.x + p.y * p.y);
+}
+calculateNorm({x:3, y:4}); //정상 결과 5
+const vec3D = {x:3, y:4, z:1};
+calculateNorm(vec3D); // error
+```
+이해 완료  
+vec3D를 vec2D를 사용하여 Vector2D로 바꾼다음 사용도 가능하다.  
+구조적 타이핑때문에 값 체크가 잘 되지않는다면 타입을 나타내는 속성을 추가하여 제어해보자.  
