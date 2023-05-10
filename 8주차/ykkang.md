@@ -360,6 +360,76 @@
 
 ## item 35: 데이터가 아닌, API와 명세를 보고 타입 만들기
 
+1. 코드 안전성을 우이해 api또는 데이터 형식에 대한 타입 생성을 고려
+2. 데이터보다는 api 명세로부터 코드 생성
+
 ## item 36: 해당 분야의 용어로 타입 이름 짓기
 
+1. 코드로 표현하고자 하는 모든 분야에는 주제를 설명하기 위한 전문 용어들이 존재. 그래서 자체적으로 용어를 만들기 보다는 해당 분야에 이미 존재하는 용어를 사용.
+2. 동일한 의미를 나타낼 때는 같은 용어를 사용.
+3. 의미적으로 구분되야하는 경우에만 용어를 분리.
+4. 모호하고 의미없는 이름은 피해야함
+5. 이름을 지을때 포함된 내용이나 계산 방식이 아닌 데이터 자체가 무엇인지를 고려해야함.
+
 ## item 37: 공식 명칭에는 상표를 붙이기
+
+1. 구조적 타이핑에서는 가끔 이상한 결과가 도출되기도 함.
+
+   ```ts
+   interface Vector2D {
+     x: number;
+     y: number;
+   }
+
+   function clacNorm(p: Vector2D) {
+     return Math.sqrt(p.x * p.x + p.y * p.y);
+   }
+
+   clacNorm({ x: 3, y: 4 }); // 정상 결과 5
+   const vec3D = { x: 3, y: 4, z: 1 };
+   clacNorm(vec3D); // 정상 결과 5
+
+   // 구조적 타이핑 관점에서는 이상이 X
+   // 수학적 결과에서는 오류
+   ```
+
+   이를 해결하기 위해서는 공식명칭을 사용하면 됨
+
+   ```ts
+   interface Vector2D {
+     _brand: "2d"; // _brand를 통해 calculatedNorm 함수가 Vertor2D 타입만 받도록함
+     x: number;
+     y: number;
+   }
+
+   function vec2D(x: number, y: number): Vector2D {
+     return { x, y, _brand: "2d" };
+   }
+
+   function calcNorm(p: Vector2D) {
+     return Math.sqrt(p.x * p.x + p.y * p.y);
+   }
+
+   calcNorm(vec2D(3, 4));
+   const vec3D = { x: 3, y: 4, z: 1 };
+   calcNorm(vec3D); // 비정상 _brand 속성 없음.
+   ```
+
+2. 상표기법은 타입 시스템에서 동작하지만 런타임때 상표검사하는것과 동일한 효과를 얻을 수 있음.
+
+   ```ts
+   type ABSPath = string & { _brand: "abs" };
+   function listAbsPath(path: ABSPath) {
+     console.log(path);
+   }
+
+   function isAbsPath(path: string): path is ABSPath {
+     return path.startsWith("/");
+   }
+   function f(path: string) {
+     if (isAbsPath(path)) {
+       listAbsPath(path); // 정상
+     }
+     listAbsPath(path); // 비정상
+   }
+   ```
