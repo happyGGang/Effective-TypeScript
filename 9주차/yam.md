@@ -80,6 +80,33 @@ aaaa=3; // not error
 ```
 다만 {}를 사용하고 3과같은 값을 넣었을때 직관적으로 어울리지 않다고 개인적으로 생각되어  
 사용을 기피할 듯 함
-## item 43 : 몽키 패치보다는 안전한 타입을 사용하기
+## item 43 : 몽키 패치보다는 안전한 타입을 사용하기  
+자바스크립트의 유명한 특징 중 하나는,  
+객체에 임의의 속성을 추가할 수 있을 만큼 유연하다는 것  
+```js
+window.a = 3;
+```
+
+다만 이 특징을 남발하다보면 부작용시 생길 수 있다.  
+타입스크립트의 예시에선.  
+돔의 속성에 접근하여 임의로 추가를 해버리면,  
+HTMLElement의 타입체커가 에러를 뿜어낼 수 있음  
+
+```ts
+document.monkey = 'Tamarin'; // error 'Document' 유형에 'monkey' 속성이 없습니다.
+(document as any).monkey = 'Tamarin'; // not error
+```
+
+any타입으로 대신하여 해결할 수 있지만,  
+그럼 타입스크립트의 의미가 훼손되어짐  
+
+이것의 해결책은 document로부터 데이터를 분리하라 함  
+interface를 이용하기  
+```ts
+interface Document {
+    monkey: string;
+}
+document.monkey = 'Tamarin';
+```
 
 ## item 44 : 타입 커버리지를 추적하여 타입 안전성 사용하기
