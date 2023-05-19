@@ -109,4 +109,12 @@ interface Document {
 document.monkey = 'Tamarin';
 ```
 
-## item 44 : 타입 커버리지를 추적하여 타입 안전성 사용하기
+## item 44 : 타입 커버리지를 추적하여 타입 안전성 사용하기  
+noImplicitAny를 설정 후, 모든 암시적 any 대신  
+명시적 타입 구문을 추가해도 any 타입과 관련된 문제들로부터 완벽히 안전할 수 없음  
+any타입이 여전히 존재할 수 있는 두 가지 경우가 있음  
+ - 명시적 any 타입  
+ - 서드파티 타입 선언  
+
+any의 개수를 추적할 수 있는 type-cover-age 패키지 라는 것이 있음  
+뭐 이런 도구를 이용해 any 타입을 관리하라 함.  
