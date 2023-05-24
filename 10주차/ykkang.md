@@ -36,7 +36,53 @@
 
 ## item 49 : 콜백에서 this에 대한 타입 제공하기
 
+1. 콜백함수에서 this를 사용해야한다면 타입정보를 명시하자.
+
+```ts
+//함수의 두 번째 파라미터 fn의 시그니처에서 첫 번째 라파미터 this는 특별하게 처리됩니다.
+function addKeyListener(
+  el: HTMLElement,
+  fn: (this: HTMLElement, e: KeyboardEvent) => void
+) {
+  el.addEventListener("keydown", (e) => {
+    fn.call(el, e); // 정상
+    fn(el, e); // 오류, 콜백 함수의 매개별수에 this를 추가하면 this 바인딩이 체크되기 때문에 실수를 방지 할 수 있음.
+  });
+}
+```
+
 ## item 50 : 오버로딩 타입보다는 조건부 타입 사용하기
+
+1. 여러 종류의 파라미터를 받는 함수 시그니처를 명세할 때에는 함수 오버로딩 X 조건부 타입을 활용한 함수 시그니처 명세가 더 정교한 타입 추론을 가능
+
+```ts
+// 타입 오버로딩
+function double(x: number): number;
+function double(x: string): string;
+function double(x: any) {
+  return x + x;
+}
+
+const x = double(10);
+const y = double("yy");
+const z: string | number = "11";
+
+function zz(z: number | string) {
+  double(z); // error
+}
+
+// 조건부 타입
+function double<T extends string | number>(
+  x: T
+): T extends string ? string : number;
+function double(x: any) {
+  return x + x;
+}
+
+function zz2(z: number | string) {
+  double(z); // 정상
+}
+```
 
 ## item 51 : 의존성 분리를 위해 미러타입을 사용하기
 
