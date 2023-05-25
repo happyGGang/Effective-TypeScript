@@ -109,6 +109,26 @@ function f(x: number|string) {
 }
 ```
 
+## item 51 : 의존성 분리를 위해 미러 타입 사용하기  
+csv파일을 파싱하는 라이브러리  
+```ts
+function parseCSV(contents: string|Buffer): {[column: string]: string}[] {
+    if(typeof contents === 'object') {
+        return parseCSV(contents.toString('utf8'));
+    }
+}
+```
+여기서 Buffer의 타입정의는 NodeJS 타입 선언을 설치해서 얻을 수 있음
+$ npm install --save-dev  @types/node  
+
+하지만 이 과정에서 @types/node를 devDependencise로 포함해야 하는데  
+이로 인해  
+ - @types와 무관한 js 개발자
+ - NodeJS와 무관한 타입스크립트 웹 개발자
+가 본인들이 사용하지 않는 모듈이 포함되어 있어 이상하게 생각할 것임  
+
+
+
 
 
 
