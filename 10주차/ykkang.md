@@ -62,7 +62,7 @@ function double(x: string): string;
 function double(x: any) {
   return x + x;
 }
-
+ㄴ;
 const x = double(10);
 const y = double("yy");
 const z: string | number = "11";
@@ -86,4 +86,12 @@ function zz2(z: number | string) {
 
 ## item 51 : 의존성 분리를 위해 미러타입을 사용하기
 
+1. 필수가 아닌 의존성을 분리할때는 구조적 타이핑 사용
+2. 자바스크립트 개발자나 웹 개발자가 노드 관련 의존성을 가지지 않게 하자.
+
 ## item 52 : 테스팅 타입의 함정에 주의하기
+
+1. 프로젝트 공개를 하려면 테스트 코드 작성은 필수
+2. 타입 선언 테스트도 필수
+3. 하지만 타입 선언 테스트는 어려움
+4. 그래서 타입 단언문으로 때우기 십상인대 문제가 많이때문에 dtslint를 사용하자.
