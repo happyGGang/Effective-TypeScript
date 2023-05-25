@@ -119,13 +119,16 @@ function parseCSV(contents: string|Buffer): {[column: string]: string}[] {
 }
 ```
 여기서 Buffer의 타입정의는 NodeJS 타입 선언을 설치해서 얻을 수 있음
-$ npm install --save-dev  @types/node  
+ npm install --save-dev  @types/node  
 
 하지만 이 과정에서 @types/node를 devDependencise로 포함해야 하는데  
 이로 인해  
  - @types와 무관한 js 개발자
  - NodeJS와 무관한 타입스크립트 웹 개발자
 가 본인들이 사용하지 않는 모듈이 포함되어 있어 이상하게 생각할 것임  
+
+## item 52 : 테스팅 타입의 함정에 주의하기  
+
 
 
 
