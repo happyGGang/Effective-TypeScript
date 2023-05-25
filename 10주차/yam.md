@@ -67,4 +67,48 @@ let, const 가 렉시컬 스코프인것과 다르게
 그래서 타입스크립트에서 사용할 때 주의해서 사용해야 함  
 예제는 일단 대충봐서 이해가 안되니 패스  
 
+## item 50 : 오버로딩 타입보다는 조건부 타입을 사용하기  
+```ts
+function double(x: number|string): number| string {
+  return x + x;  
+};
+```
+위 코드가 틀린것은 아니지만  
+string을 넣으면 string이 반환되고,  
+number를 넣으면 number를 반환된다는 정보는 어디에도 없다;  
+
+제너릭을 사용하면 위 아쉬운 점을 해결 가능
+```ts  
+function double<T extends nyumber|string>(x: T): T;
+```
+
+이게 거창하다면 그냥 타입을 구분지어 함수를 생성
+```ts
+function double(x: number): number;
+function double(x: string): string;
+```
+
+하지만 위 방법도 아쉬운 점이 있음  
+원래대로라면 double함수는
+string|number가 타입인 인수에 할당가능해야하지만 위처럼 타입을 구분지어 버리면 할당이 불가함  
+```ts
+function f(x: number|string) {
+    return double(x); // error      string|number 형식의 인수는 string형식의 매개변수에 할당불가
+}
+
+```
+
+조건부 타입 추가  
+```ts
+function double<T extends number | string>(
+    x: T
+): T extends string ? string : number;
+function double(x: any) {return x + x;}
+function f(x: number|string) {
+    return double(x);
+}
+```
+
+
+
 
