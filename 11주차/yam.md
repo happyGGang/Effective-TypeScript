@@ -88,3 +88,26 @@ namespace foo
 다만 현재까지도 표준화가 안료되지 않아서,  
 사용중인 데코레이터가 비표준으로 바뀌거나 호환성이 깨질 가능성이 있음  
 
+## item 54 : 객체를 순회하는 노하우  
+밑 예제는 정상적으로 실행하지만 편집기에서는 오류가 발생함  
+```ts
+const obj = {
+    one: 'a',
+    two: 'b',
+    thre: 'c',
+};
+for (const k in obj) {
+    const v = obj[k] // obj에 인덱스 시그니처가 없기 때문에 엘리먼트는 암시적으로 'any' 타입입니다.
+}
+```
+이 오류는 k의 타입은 string인 반면, obj 객체에는 one,two,three 세 개의 키만 존재하기 때문에  
+k와 obj의 타입이 서로 다르게 추론되어 오류를 발생시키는 것.  
+k의 타입을 구체화 시키면 됨
+```ts  
+let k: keyof typeof obj; // "one"|"two"|"three" 타입
+for (k in obj) {
+    const v = obj[k] // 정상
+}
+```  
+이 처럼 keyof typeof 를 이용하여 객체를 순회할 수 있고,  
+Object.entries 도 직관적이진 않지만 하나의 방법임
