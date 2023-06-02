@@ -110,4 +110,23 @@ for (k in obj) {
 }
 ```  
 이 처럼 keyof typeof 를 이용하여 객체를 순회할 수 있고,  
-Object.entries 도 직관적이진 않지만 하나의 방법임
+Object.entries 도 직관적이진 않지만 하나의 방법임  
+
+## item 56 : 정보를 감추는 목적으로 private 사용하지 않기  
+자바스크립트는 클래스에 비공개 속성을 만들 수 없고,  
+많이들 "_" 를 접두사로 붙이곤 했음  
+```js
+class Foo {
+    _private = 'secret123';
+}
+```
+다만 실제로 비공개 되진 않음
+```js
+const f = new Foo();
+f._private // 'secret123';
+```
+
+타입스크립트에는 private, protected 등 접근 제어자가 있지만  
+컴파일 후에는 사라지게 된다.  
+즉 정보를 감추기 위해 private를 쓰면 안됨  
+대신 클로저를 이용함  
