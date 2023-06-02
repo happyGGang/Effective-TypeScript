@@ -132,8 +132,99 @@ console.log(new Greeter("Dave").greet());
 
 ## item 54 : 객체를 순회하는 노하우
 
-## item 55 : DOM 계층 구조 이해하기
+```ts
+const obj = {
+  one: "uno",
+  two: "dos",
+  three: "tres",
+};
+
+for (const k in obj) {
+  const v = obj[k];
+  // error) obj에 인덱스 시그니처가 없기 때문에 엘리먼트는 암시적으로 'any' 타입
+}
+```
+
+원인은 obj의 타입은 'one' 'two' 'three' 속성만 허용하는 타입이지만 for 이터레이션의 k 변수의 타입은 string타입으로 추론되었기 때문입니다.왜냐하면 타입스크립트 타입 체커는 'obj' 속성에 언제든 새로운 속성이 추가될 수 있다는 것을 알고 있기 때문임.
+
+obj 객체에 'four'과 같은 속성들이 언제든지 추가가 될 수 있기 때문에 타입 추론을 string으로 합니다. 여기에 key의 타입을 상세하게 추가해주면 에러 해결됨
+
+```ts
+const obj = {
+  one: "uno",
+  two: "dos",
+  three: "tres",
+};
+
+let k: keyof typeof obj; //  "one" | "two" | "three";
+
+for (k in obj) {
+  const v = obj[k]; // ok
+}
+```
+
+Object.entries() 쓰면 편함
+
+```ts
+const obj = {
+  one: "uno",
+  two: "dos",
+  three: "tres",
+};
+
+for (const k in obj) {
+  console.log(obj[k]); // error
+}
+
+for (const [key, value] of Object.entries(obj)) {
+  console.log(value); // ok
+}
+```
 
 ## item 56 : 정보를 감추는 목적으로 private 사용하지 않기
 
+1. 자바스크립트는 클래스에 비공개 속성 만들수없음
+2. 언더스코어 표시는 말그대로 비공개라고 표시만 해둔거임
+3. 타입스크립트의 접근 제어자 private, public, protected를 사용해서 공개 규칙을 강제할 수 없음. 왜냐면 런타임때 제거되기때문임.
+4. 그래서 대신 클로저를 사용하자.
+
+```ts
+declare function hash(text: string): number;
+
+class PasswordChecker {
+  checkPassword: (password: string) => boolean;
+  constructor(passwordHash: number) {
+    this.checkPassword = (password: string) => {
+      return hash(password) === passwordHash;
+    };
+  }
+}
+
+const checker = new PasswordChecker(hash("ABBB"));
+checker.checkPassword("ABBB");
+```
+
+5. passwordHash' 값은 생성자 외부에서 접근할 수 없음, 그래서 해당 변수에 접근해야 하는 메서드의 경우 똑같이 생성자 내부에서 정의되어야 함.
+   그리고, 메서드 정의가 생성자 내부에 존재하게 되면, 인스턴스를 생성할 때마다 각 메서드의 복제본이 생성되서 메모리 낭비됨.
+   해결방법으로는 '#' 접두사를 붙혀서 타입 체크와 런타임 모두 비공개로 만드는거임.
+
+```ts
+declare function hash(text: string): number;
+
+class PasswordChecker {
+  #passwordHash: number;
+  constructor(passwordHash: number) {
+    this.passwordHash = passwordHash;
+  }
+  checkPassword(password: string) {
+    return hash(password) === this.#passwordHash;
+  }
+}
+```
+
 ## item 57 : 소스맵을 사용하여 타입스크립트 디버깅 하기
+
+1. 타입스크립트 코드 실행 = 타입스크립트 컴파일러가 생성한 자바스크립트 코드 실행
+2. 디버거는 런타임때 동작함
+3. 전처리기를 거친 자바스크립트 코드는 디버깅하기 어렵
+4. 그래서 tsconfig.json에서 sourceMap 옵션을 true로 설정하면 타입스크립트 컴파일러가 소스맵 파일을 생성함. 이것을 사용해 디버깅 해야함.
